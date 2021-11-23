@@ -1,10 +1,8 @@
-(guile-ffi-cblas) -*- mode: org; -*-
+(guile-ffi-blis) -*- mode: org; -*-
 
 Help: [C-uc .] insert timestamp [C-cc] flip checkbox [C-uucc] partial flip checkbox [C-ct] flip TODO.
 
 * TODO coverage [0/0]
-  * finish wrapping CBLAS [0/1]
-    * [ ] see mod/ffi/cblas.scm
   * wrap BLIS level 1v [0/2]
     * [ ] dotv axpyv axpbyv (the latter are missing the functional variant)
     * [ ] addv amaxv copyv dotxv invertv scal2v scalv setv subv swapv xpbyvdotv
@@ -20,4 +18,4 @@ Help: [C-uc .] insert timestamp [C-cc] flip checkbox [C-uucc] partial flip check
   * [ ] docstrings for 1st level functions
 
 * TODO bugs [0/1]
-  * [ ] CBLAS negative strides
+  * [ ] (help (ffi blis)) doesn't work
