@@ -152,8 +152,8 @@ void bli_?axpbyv
                           (scalar->arg type beta)
                           (pointer-to-first Y) (stride Y 0)))))))))
 
-(define-sdcz axpbyv bli_?axpbyv ?axpbyv!)
-(define-auto (axpbyv! conjX alpha X beta Y) X ?axpbyv!)
+(define-sdcz axpbyv bli_?axpbyv blis-?axpbyv!)
+(define-auto (blis-axpbyv! conjX alpha X beta Y) X blis-?axpbyv!)
 
 #|
 void bli_?axpyv
@@ -183,8 +183,8 @@ void bli_?axpyv
                           (pointer-to-first X) (stride X 0)
                           (pointer-to-first Y) (stride Y 0)))))))))
 
-(define-sdcz axpyv bli_?axpyv ?axpyv!)
-(define-auto (axpyv! conjX alpha X Y) X ?axpyv!)
+(define-sdcz axpyv bli_?axpyv blis-?axpyv!)
+(define-auto (blis-axpyv! conjX alpha X Y) X blis-?axpyv!)
 
 #|
 void bli_?dotv
@@ -217,8 +217,8 @@ void bli_?dotv
                             (pointer-to-first rho))
                  (array-ref rho)))))))))
 
-(define-sdcz dotv bli_?dotv ?dotv)
-(define-auto (dotv conjX conjY X Y) X ?dotv)
+(define-sdcz dotv bli_?dotv blis-?dotv)
+(define-auto (blis-dotv conjX conjY X Y) X blis-?dotv)
 
 
 ; -----------------------------
@@ -289,8 +289,8 @@ See also: ~a
                  (name! transA conjX alpha A X 0 Y)
                  Y))))))))
 
-(define-sdcz gemv bli_?gemv ?gemv! ?gemv)
-(define-auto (gemv! transA conjX alpha A X beta Y) A ?gemv!)
+(define-sdcz gemv bli_?gemv blis-?gemv! blis-?gemv)
+(define-auto (blis-gemv! transA conjX alpha A X beta Y) A blis-?gemv!)
 
 #|
 void bli_?ger( conj_t  conjx,
@@ -352,8 +352,8 @@ See also: ~a
                  (name! conjX conjY alpha X Y A)
                  A))))))))
 
-(define-sdcz ger bli_?ger ?ger! ?ger)
-(define-auto (ger! conjX conjY alpha X Y A) X ?ger!)
+(define-sdcz ger bli_?ger blis-?ger! blis-?ger)
+(define-auto (blis-ger! conjX conjY alpha X Y A) X blis-?ger!)
 
 
 ; -----------------------------
@@ -428,5 +428,5 @@ See also: ~a
                  (name! transA transB alpha A B 0. C)
                  C))))))))
 
-(define-sdcz gemm bli_?gemm ?gemm! ?gemm)
-(define-auto (gemm! transA transB alpha A B beta C) A ?gemm!)
+(define-sdcz gemm bli_?gemm blis-?gemm! blis-?gemm)
+(define-auto (blis-gemm! transA transB alpha A B beta C) A blis-?gemm!)

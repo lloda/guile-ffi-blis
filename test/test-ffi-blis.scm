@@ -71,8 +71,8 @@
     (test-end case-name)))
 
 (for-each-lambda ((type '(f32 f64 c32 c64))
-                  (axpyv (list saxpyv! daxpyv! caxpyv! zaxpyv!))
-                  (axpbyv (list saxpbyv! daxpbyv! caxpbyv! zaxpbyv!)))
+                  (axpyv (list blis-saxpyv! blis-daxpyv! blis-caxpyv! blis-zaxpyv!))
+                  (axpbyv (list blis-saxpbyv! blis-daxpbyv! blis-caxpbyv! blis-zaxpbyv!)))
   (let ((scalar-cases (scalar-cases type)))
     (for-each (match-lambda
                 ((conj-A make-A make-B)
@@ -111,10 +111,10 @@
     (test-end case-name)))
 
 (for-each-lambda ((type '(f32 f64 c32 c64))
-           (dotv (list sdotv ddotv cdotv zdotv)))
+           (dotv (list blis-sdotv blis-ddotv blis-cdotv blis-zdotv)))
   (for-each (match-lambda
               ((conj-A conj-B make-A make-B)
-               (test-dotv type dotv conj-A conj-B make-A make-B)))
+               (test-dotv type blis-dotv conj-A conj-B make-A make-B)))
     (list-product
      (list BLIS_CONJUGATE BLIS_NO_CONJUGATE)
      (list BLIS_CONJUGATE BLIS_NO_CONJUGATE)
@@ -161,15 +161,15 @@
       (let ((A (fill-A2! (make-typed-array type *unspecified* 4 3)))
             (B (fill-A2! (make-typed-array type *unspecified* 3 5)))
             (C (fill-A2! (make-typed-array type *unspecified* 4 5))))
-        (test-gemm "gemm-1" gemm! BLIS_NO_TRANSPOSE BLIS_NO_TRANSPOSE 1. A B 1. C)
-        (test-gemm "gemm-2" gemm! BLIS_TRANSPOSE BLIS_NO_TRANSPOSE 1. A C 1. B)
-        (test-gemm "gemm-3" gemm! BLIS_NO_TRANSPOSE BLIS_TRANSPOSE 1. C B 1. A))
+        (test-gemm "gemm-1" blis-gemm! BLIS_NO_TRANSPOSE BLIS_NO_TRANSPOSE 1. A B 1. C)
+        (test-gemm "gemm-2" blis-gemm! BLIS_TRANSPOSE BLIS_NO_TRANSPOSE 1. A C 1. B)
+        (test-gemm "gemm-3" blis-gemm! BLIS_NO_TRANSPOSE BLIS_TRANSPOSE 1. C B 1. A))
       (let ((A (fill-A2! (transpose-array (make-typed-array 'f64 *unspecified* 4 3) 1 0)))
             (B (fill-A2! (transpose-array (make-typed-array 'f64 *unspecified* 3 5) 1 0)))
             (C (fill-A2! (transpose-array (make-typed-array 'f64 *unspecified* 4 5) 1 0))))
-        (test-gemm "gemm-4" dgemm! BLIS_TRANSPOSE BLIS_TRANSPOSE 1. A B 1. (transpose-array C 1 0))
-        (test-gemm "gemm-5" dgemm! BLIS_NO_TRANSPOSE BLIS_TRANSPOSE 1. A C 1. (transpose-array B 1 0))
-        (test-gemm "gemm-6" dgemm! BLIS_TRANSPOSE BLIS_NO_TRANSPOSE 1. C B 1. (transpose-array A 1 0)))
+        (test-gemm "gemm-4" blis-dgemm! BLIS_TRANSPOSE BLIS_TRANSPOSE 1. A B 1. (transpose-array C 1 0))
+        (test-gemm "gemm-5" blis-dgemm! BLIS_NO_TRANSPOSE BLIS_TRANSPOSE 1. A C 1. (transpose-array B 1 0))
+        (test-gemm "gemm-6" blis-dgemm! BLIS_TRANSPOSE BLIS_NO_TRANSPOSE 1. C B 1. (transpose-array A 1 0)))
 
       (define (with-matrix-types types-AB types-C)
         (for-each
@@ -192,10 +192,10 @@
       (with-matrix-types with-overlap without-overlap)
       (bli-error-checking-level-set BLIS_FULL_ERROR_CHECKING)
       (with-matrix-types without-overlap without-overlap)))
- `((f32 ,sgemm!)
-   (f64 ,dgemm!)
-   (c32 ,cgemm!)
-   (c64 ,zgemm!)))
+ `((f32 ,blis-sgemm!)
+   (f64 ,blis-dgemm!)
+   (c32 ,blis-cgemm!)
+   (c64 ,blis-zgemm!)))
 
 
 ; ---------------------------------
@@ -258,10 +258,10 @@
        (with-types without-overlap-M with-overlap-v without-overlap-v)
        (bli-error-checking-level-set BLIS_FULL_ERROR_CHECKING)
        (with-types without-overlap-M without-overlap-v without-overlap-v)))
-  `((f32 ,sgemv!)
-    (f64 ,dgemv!)
-    (c32 ,cgemv!)
-    (c64 ,zgemv!)))
+  `((f32 ,blis-sgemv!)
+    (f64 ,blis-dgemv!)
+    (c32 ,blis-cgemv!)
+    (c64 ,blis-zgemv!)))
 
 
 ; ---------------------------------
@@ -312,10 +312,10 @@
                 make-M-strided make-M-strided-both make-M-strided-reversed)
           (list BLIS_NO_CONJUGATE BLIS_CONJUGATE)
           (list BLIS_NO_CONJUGATE BLIS_CONJUGATE)))))
-  `((f32 ,sger!)
-    (f64 ,dger!)
-    (c32 ,cger!)
-    (c64 ,zger!)))
+  `((f32 ,blis-sger!)
+    (f64 ,blis-dger!)
+    (c32 ,blis-cger!)
+    (c64 ,blis-zger!)))
 
 (define error-count (test-runner-fail-count (test-runner-current)))
 (test-end "ffi-blis")
