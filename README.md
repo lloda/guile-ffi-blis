@@ -2,9 +2,9 @@
 ### guile-ffi-blis
 
 This is a set of Guile FFI bindings for the linear algebra subprograms library,
-**BLIS**<sup id="a1">[1](#f1)</sup>, It provides operations such as vector dot
+**BLIS**<sup id="a1">[1](#f1)</sup>. It provides operations such as vector dot
 product, matrix-vector product, matrix-matrix product, and so on.  These
-bindings are for **BLIS**' ‘typed’ API.<sup id="a2">[2](#f2)</sup>
+bindings are for **BLIS**' ‘typed’ API<sup id="a2">[2](#f2)</sup>.
 
 To use the bindings, import `(ffi blis)`. **BLIS** will be loaded from the
 default dynamic library path (see ‘Installation notes’ below). There are up to
@@ -50,9 +50,9 @@ variable `GUILE_FFI_BLIS_LIBPATH`. There are other variables that control where
 `dynamic-link` searches for libraries (`LTDL_LIBRARY_PATH`, `LD_LIBRARY_PATH`)
 and you may prefer to set those instead.
 
-A previous version of this library (`guile-ffi-cblas`) also included **CBLAS**
-bindings, but now I have moved those to a separate library. The following notes
-on using that previous version on Guix might still be useful:
+A previous version of this library also included **CBLAS** bindings, but now I have moved those to a
+separate library (`guile-ffi-cblas`). The following notes on using that previous version on Guix
+might still be useful for `guile-ffi-blis`:
 [https://notabug.org/ZelphirKaltstahl/guile-ml#using-guile-ffi-cblas](https://notabug.org/ZelphirKaltstahl/guile-ml#using-guile-ffi-cblas).
 
 ### Running the tests
@@ -75,18 +75,18 @@ $GUILE ... etc.
 
 #### BLIS level 1
 
-* sdaxpy ddaxpy cdaxpy zdaxpy
-* sdaxpby ddaxpby cdaxpby zdaxpby
-* sdotv ddotv cdotv zdotv
+* `sdaxpy` `ddaxpy` `cdaxpy` `zdaxpy`
+* `sdaxpby` `ddaxpby` `cdaxpby` `zdaxpby`
+* `sdotv` `ddotv` `cdotv` `zdotv`
 
 #### BLIS level 2
 
-* sgemv dgemv cgemv zgemv
-* sger dger cger zger
+* `sgemv` `dgemv` `cgemv` `zgemv`
+* `sger` `dger` `cger` `zger`
 
 #### BLIS level 3
 
-* sgemm dgemm cgemm zgemm
+* `sgemm` `dgemm` `cgemm` `zgemm`
 
 ***
 
@@ -101,13 +101,13 @@ well defined (some discussion on the topic
 if you disable **BLIS**' internal error checking with
 `(bli-error-checking-level-set BLIS_NO_ERROR_CHECKING)` **BLIS** will produce
 the correct result, as far as I've been able to verify. `(ffi blis)` performs
-independent shape checks on the typed and functional bindings, and the array
-arguments have valid strides by construction, so the lack of error checking by
-**BLIS** itself isn't necessarily a problem. The test suite includes tests with
-a variety of overlapping stride combinations for `gemm` and `gemv`. Still,
-**BLIS** doesn't *officially* support these strides. Note that if the
-*destination* argument has overlapping strides, then the result depends on the
-order in which the operations are carried out and is pretty much
+independent shape checks on the typed and functional bindings, and the Guile
+array arguments have valid strides by construction, so the lack of error
+checking by **BLIS** itself isn't necessarily a problem. The test suite includes
+tests with a variety of overlapping stride combinations for `gemm` and
+`gemv`. Still, **BLIS** doesn't *officially* support these strides. Note that if
+the *destination* argument has overlapping strides, then the result depends on
+the order in which the operations are carried out and is pretty much
 undefined. `(ffi blis)` will *not* check the destination argument for this
 error. [↩](#a3)
 
