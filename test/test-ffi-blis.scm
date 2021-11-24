@@ -42,8 +42,8 @@
                   test expected)
   (test-end tag))
 
-(define (scalar-cases srfi4-type)
-  (match srfi4-type
+(define (scalar-cases stype)
+  (match stype
     ((or 'f32 'f64) '(-1 0 2))
     ((or 'c32 'c64) '(1-1i 1+1i 0 2))))
 

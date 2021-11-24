@@ -41,10 +41,10 @@
 
 (define (pointer-to-first A)
   (bytevector->pointer (shared-array-root A)
-                       (* (shared-array-offset A) (srfi4-type-size (array-type A)))))
+                       (* (shared-array-offset A) (srfi-4-type-size (array-type A)))))
 
-(define (scalar->arg srfi4-type a)
-  (bytevector->pointer (make-typed-array srfi4-type a 1) 0))
+(define (scalar->arg stype a)
+  (bytevector->pointer (make-typed-array stype a 1) 0))
 
 
 ; -----------------------------
