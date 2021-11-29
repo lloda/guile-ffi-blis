@@ -75,6 +75,7 @@ $GUILE ... etc.
 
 #### BLIS level 1
 
+* `scopy` `dcopy` `ccopy` `zcopy`
 * `sdaxpy` `ddaxpy` `cdaxpy` `zdaxpy`
 * `sdaxpby` `ddaxpby` `cdaxpby` `zdaxpby`
 * `sdotv` `ddotv` `cdotv` `zdotv`

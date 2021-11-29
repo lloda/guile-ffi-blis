@@ -49,37 +49,51 @@
 
 
 ; ---------------------------------
-; ?axby ?axpby
+; ?copy ?axby ?axpby
 ; ---------------------------------
 
-(define (test-axpbyv type f conj-A alpha make-A beta make-B)
+(define (test-axpbyv type f-name f conj-A alpha make-A beta make-B)
 
   (define (ref conjX alpha X beta Y)
-    (array-for-each
-     (lambda (x y)
-       (set! y (+ (* beta y) (* beta (if (= conjX BLIS_CONJUGATE) (conj x) x)))))
-     X Y))
+    (array-map! Y
+      (lambda (x y)
+        (+ (* beta y) (* alpha (if (eqv? conjX BLIS_CONJUGATE) (conj x) x))))
+      X Y)
+    Y)
 
   (let* ((tag (format #f "~a:~a" (procedure-name make-A) (procedure-name make-B)))
          (case-name (format #f "~a, ~a" (procedure-name f) tag))
          (A (fill-A1! (make-A type)))
-         (B (fill-B1! (make-B type))))
+         (B (fill-B1! (make-B type)))
+         (Aref (array-copy A))
+         (Bref (array-copy B)))
     (test-begin case-name)
     (for-each-lambda ((alpha alpha))
       (for-each-lambda ((beta beta))
-        (test-equal (ref conj-A alpha A beta B) (f conj-A alpha A beta B))))
+        (let ((val-ref (ref conj-A alpha A beta Bref))
+              (val-f (f conj-A alpha A beta B)))
+          (test-approximate-array 'source A Aref 0)
+          (test-approximate-array 'content B Bref 0)
+          (test-approximate-array 'result val-ref val-f 0))))
     (test-end case-name)))
 
 (for-each-lambda ((type '(f32 f64 c32 c64))
+                  (copyv (list blis-scopyv! blis-dcopyv! blis-ccopyv! blis-zcopyv!))
                   (axpyv (list blis-saxpyv! blis-daxpyv! blis-caxpyv! blis-zaxpyv!))
                   (axpbyv (list blis-saxpbyv! blis-daxpbyv! blis-caxpbyv! blis-zaxpbyv!)))
   (let ((scalar-cases (scalar-cases type)))
     (for-each (match-lambda
                 ((conj-A make-A make-B)
-                 (test-axpbyv type (lambda (conj-A alpha make-A beta make-B)
-                                     (axpbyv conj-A alpha make-A 1 make-B))
+                 (test-axpbyv type 'copy
+                              (lambda (conj-A alpha make-A beta make-B)
+                                (copyv conj-A make-A make-B))
+                              conj-A '(1) make-A '(0) make-B)
+                 (test-axpbyv type 'axpyv
+                              (lambda (conj-A alpha make-A beta make-B)
+                                (axpyv conj-A alpha make-A make-B))
                               conj-A scalar-cases make-A '(1) make-B)
-                 (test-axpbyv type axpbyv
+                 (test-axpbyv type 'axpbyv
+                              axpbyv
                               conj-A scalar-cases make-A scalar-cases make-B)))
       (list-product
        (list BLIS_CONJUGATE BLIS_NO_CONJUGATE)

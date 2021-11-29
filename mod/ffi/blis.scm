@@ -114,8 +114,45 @@
 
 
 ; -----------------------------
-; level-1v: addv amaxv *axpyv *axpbyv copyv *dotv dotxv invertv scal2v scalv setv subv swapv xpbyv
+; level-1v: addv amaxv *axpyv *axpbyv *copyv *dotv dotxv invertv scal2v scalv setv subv swapv xpbyv
 ; -----------------------------
+
+#|
+y := conjx(x)
+
+void bli_?copyv
+     (
+       conj_t  conjx,
+       dim_t   n,
+       ctype*  alpha,
+       ctype*  x, inc_t incx,
+       ctype*  beta,
+       ctype*  y, inc_t incy
+     )
+|#
+
+(define-syntax define-copyv
+  (lambda (x)
+    (syntax-case x ()
+      ((_ type blis-name name!)
+       (with-syntax ((type #'(quote type)))
+         #`(begin
+             (define blis-name (pointer->procedure
+                                void (dynamic-func #,(symbol->string (syntax->datum #'blis-name)) libblis)
+                                (list conj_t dim_t rank1_t inc_t rank1_t inc_t)))
+             (define (name! conjX X Y)
+               #,(let ((t (syntax->datum #'type_)))
+                   (format #f "(~a conjx [conj_t] x [#~a(…)] y [#~a(…)])\n\n~a\n"
+                           (symbol->string (syntax->datum #'name!)) t t
+                           "y := conjx(x)"))
+               (check-2-arrays X Y 1 type)
+               (blis-name conjX (array-length X)
+                          (pointer-to-first X) (stride X 0)
+                          (pointer-to-first Y) (stride Y 0))
+               Y)))))))
+
+(define-sdcz copyv bli_?copyv blis-?copyv!)
+(define-auto (blis-copyv! conjX X Y) X blis-?copyv!)
 
 #|
 y := beta * y + alpha * conjx(x)
@@ -150,7 +187,8 @@ void bli_?axpbyv
                           (scalar->arg type alpha)
                           (pointer-to-first X) (stride X 0)
                           (scalar->arg type beta)
-                          (pointer-to-first Y) (stride Y 0)))))))))
+                          (pointer-to-first Y) (stride Y 0))
+               Y)))))))
 
 (define-sdcz axpbyv bli_?axpbyv blis-?axpbyv!)
 (define-auto (blis-axpbyv! conjX alpha X beta Y) X blis-?axpbyv!)
@@ -181,7 +219,8 @@ void bli_?axpyv
                (blis-name conjX (array-length X)
                           (scalar->arg type alpha)
                           (pointer-to-first X) (stride X 0)
-                          (pointer-to-first Y) (stride Y 0)))))))))
+                          (pointer-to-first Y) (stride Y 0))
+               Y)))))))
 
 (define-sdcz axpyv bli_?axpyv blis-?axpyv!)
 (define-auto (blis-axpyv! conjX alpha X Y) X blis-?axpyv!)
