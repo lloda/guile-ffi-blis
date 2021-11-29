@@ -3,10 +3,12 @@
 Help: [C-uc .] insert timestamp [C-cc] flip checkbox [C-uucc] partial flip checkbox [C-ct] flip TODO.
 
 * TODO coverage [0/0]
-  * wrap BLIS level 1v [0/2]
-    * [ ] dotv axpyv axpbyv (the latter are missing the functional variant)
-    * [ ] addv amaxv copyv dotxv invertv scal2v scalv setv subv swapv xpbyvdotv
-  * wrap BLIS level 1n [0/1]
+  * wrap BLIS level 1v [2/4]
+    * [X] copyv axpyv axpbyv
+    * [ ] functional variants for copyv axpyv axpbyv
+    * [X] dotv
+    * [ ] addv amaxv dotxv invertv scal2v scalv setv subv swapv xpbyvdotv
+  * wrap BLIS level 1m [0/1]
     * [ ] addm axpym copym scalm scal2m setm subm
   * wrap BLIS utility, at least some of these [0/1]
     * [ ] asumv norm1v normfv normiv norm1m normfm normim mkherm mksymm mktrim randv randm sumsqv
@@ -19,3 +21,4 @@ Help: [C-uc .] insert timestamp [C-cc] flip checkbox [C-uucc] partial flip check
 
 * TODO bugs [0/1]
   * [ ] (help (ffi blis)) doesn't work
+    - something to do with (primitive-call-ip bli_cdotv) failing
