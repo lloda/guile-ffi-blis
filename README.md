@@ -14,8 +14,8 @@ three bindings for each function, here using `ZGEMM` as an example:
   use this if you aren't familiar with Guile's FFI.
 
 - `blis-zgemm!` (typed binding): takes array arguments of type `'c64` and operates by
-  effect, without making copies. All the arguments must be properly sized. The
-  return value is unspecified.
+  effect, without making copies. All the arguments must be properly sized. For
+  convenience, this function returns the output argument.
 
 - `blis-zgemm` (functional binding): takes array arguments of compatible types and
   returns a newly constructed array. The arguments will be converted as
@@ -75,9 +75,9 @@ $GUILE ... etc.
 
 #### BLIS level 1
 
-* `scopy` `dcopy` `ccopy` `zcopy`
-* `sdaxpy` `ddaxpy` `cdaxpy` `zdaxpy`
-* `sdaxpby` `ddaxpby` `cdaxpby` `zdaxpby`
+* `scopyv` `dcopyv` `ccopyv` `zcopyv`
+* `sdaxpyv` `ddaxpyv` `cdaxpyv` `zdaxpyv`
+* `sdaxpbyv` `ddaxpbyv` `cdaxpbyv` `zdaxpbyv`
 * `sdotv` `ddotv` `cdotv` `zdotv`
 
 #### BLIS level 2
