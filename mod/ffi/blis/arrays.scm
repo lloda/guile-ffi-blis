@@ -29,13 +29,17 @@
   (unless (= rank (array-rank A)) (throw 'bad-rank (array-rank A)))
   (unless (typed-array? A type) (throw 'bad-type type (array-type A))))
 
+; FIXME return shapes, since those are often neede after the check
 (define (check-2-arrays A B rank type)
   (check-array A rank type)
   (check-array B rank type)
-  (unless (= (array-length A) (array-length B))
-    (throw 'bad-sizes (array-length A) (array-length B)))
-  (unless (= 0 (caar (array-shape A)) (caar (array-shape B)))
-    (throw 'bad-base-indices (array-length A) (array-length B))))
+  (let ((sha (array-shape A))
+        (shb (array-shape B)))
+    (for-each (match-lambda*
+                (((alo ahi) (blo bhi))
+                 (unless (= 0 alo blo) (throw 'bad-base-indices sha shb))
+                 (unless (= ahi bhi) (throw 'mismatched-sizes sha shb))))
+      sha shb)))
 
 (define (srfi-4-type-size stype)
   (case stype

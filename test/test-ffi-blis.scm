@@ -7,7 +7,7 @@
 ; Software Foundation; either version 3 of the License, or (at your option) any
 ; later version.
 
-(import (ffi blis) (srfi srfi-64) (srfi srfi-1) (ice-9 match) (srfi srfi-26))
+(import (ffi blis) (srfi srfi-64) (srfi srfi-1) (ice-9 match) (srfi srfi-26) (ice-9 arrays))
 (include "common.scm")
 
 (set! test-log-to-file #f)
@@ -23,7 +23,7 @@
         (else (throw 'bad-transpose-flag flag))))
 
 ; to be disabled/relaxed for specific tests, see below
-(bli-error-checking-level-set BLIS_FULL_ERROR_CHECKING)
+(blis-error-checking-level-set! BLIS_FULL_ERROR_CHECKING)
 
 
 ; ---------------------------------
@@ -49,10 +49,10 @@
 
 
 ; ---------------------------------
-; ?copy ?axby ?axpby
+; ?copyv ?axbyv ?axpbyv
 ; ---------------------------------
 
-(define (test-axpbyv type f-name f conj-A alpha make-A beta make-B)
+(define (test-lin type f-name f conj-A alpha make-A beta make-B)
 
   (define (ref conjX alpha X beta Y)
     (array-map! Y
@@ -84,21 +84,36 @@
   (let ((scalar-cases (scalar-cases type)))
     (for-each (match-lambda
                 ((conj-A make-A make-B)
-                 (test-axpbyv type 'copy
-                              (lambda (conj-A alpha make-A beta make-B)
-                                (copyv conj-A make-A make-B))
-                              conj-A '(1) make-A '(0) make-B)
-                 (test-axpbyv type 'axpyv
-                              (lambda (conj-A alpha make-A beta make-B)
-                                (axpyv conj-A alpha make-A make-B))
-                              conj-A scalar-cases make-A '(1) make-B)
-                 (test-axpbyv type 'axpbyv
-                              axpbyv
-                              conj-A scalar-cases make-A scalar-cases make-B)))
+                 (test-lin type 'copy
+                           (lambda (conj-A alpha make-A beta make-B)
+                             (copyv conj-A make-A make-B))
+                           conj-A '(1) make-A '(0) make-B)
+                 (test-lin type 'axpyv
+                           (lambda (conj-A alpha make-A beta make-B)
+                             (axpyv conj-A alpha make-A make-B))
+                           conj-A scalar-cases make-A '(1) make-B)
+                 (test-lin type 'axpbyv
+                           axpbyv
+                           conj-A scalar-cases make-A scalar-cases make-B)))
       (list-product
        (list BLIS_CONJUGATE BLIS_NO_CONJUGATE)
        (list make-v-compact make-v-offset make-v-strided)
        (list make-v-compact make-v-offset make-v-strided)))))
+
+
+; ---------------------------------
+; ?axpbym BUG
+; ---------------------------------
+
+#|
+(define pointer-to-first (@@ (ffi blis) pointer-to-first))
+(define scalar->arg (@@ (ffi blis) scalar->arg))
+(blis-error-checking-level-set! BLIS_FULL_ERROR_CHECKING)
+
+(define A (array-copy #2f64((1 2) (3 4))))
+(define B (array-copy #2f64((9 8) (7 6))))
+(blis-daxpym! 0 BLIS_NONUNIT_DIAG BLIS_DENSE BLIS_NO_TRANSPOSE 3 A B)
+|#
 
 
 ; ---------------------------------
@@ -202,9 +217,9 @@
       (define without-overlap (list make-M-c-order make-M-fortran-order make-M-offset
                                     make-M-strided make-M-strided-both make-M-strided-reversed))
 
-      (bli-error-checking-level-set BLIS_NO_ERROR_CHECKING)
+      (blis-error-checking-level-set! BLIS_NO_ERROR_CHECKING)
       (with-matrix-types with-overlap without-overlap)
-      (bli-error-checking-level-set BLIS_FULL_ERROR_CHECKING)
+      (blis-error-checking-level-set! BLIS_FULL_ERROR_CHECKING)
       (with-matrix-types without-overlap without-overlap)))
  `((f32 ,blis-sgemm!)
    (f64 ,blis-dgemm!)
@@ -267,10 +282,10 @@
        (define without-overlap-M (list make-M-c-order make-M-fortran-order make-M-offset
                                        make-M-strided make-M-strided-both make-M-strided-reversed))
 
-       (bli-error-checking-level-set BLIS_FULL_ERROR_CHECKING)
+       (blis-error-checking-level-set! BLIS_FULL_ERROR_CHECKING)
        (with-types with-overlap-M without-overlap-v without-overlap-v)
        (with-types without-overlap-M with-overlap-v without-overlap-v)
-       (bli-error-checking-level-set BLIS_FULL_ERROR_CHECKING)
+       (blis-error-checking-level-set! BLIS_FULL_ERROR_CHECKING)
        (with-types without-overlap-M without-overlap-v without-overlap-v)))
   `((f32 ,blis-sgemv!)
     (f64 ,blis-dgemv!)

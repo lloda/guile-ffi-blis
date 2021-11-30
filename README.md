@@ -100,7 +100,7 @@ combinations in any of the array arguments as errors, even when the result is
 well defined (some discussion on the topic
 [here](https://groups.google.com/forum/#!topic/blis-discuss/ANM7i1ZpuwU)). However,
 if you disable **BLIS**' internal error checking with
-`(bli-error-checking-level-set BLIS_NO_ERROR_CHECKING)` **BLIS** will produce
+`(blis-error-checking-level-set! BLIS_NO_ERROR_CHECKING)` **BLIS** will produce
 the correct result, as far as I've been able to verify. `(ffi blis)` performs
 independent shape checks on the typed and functional bindings, and the Guile
 array arguments have valid strides by construction, so the lack of error

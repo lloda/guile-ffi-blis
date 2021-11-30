@@ -28,8 +28,13 @@
 (define dim_t gint_t)
 (define inc_t gint_t)
 (define doff_t gint_t)
+
 (define trans_t int)
 (define conj_t int)
+(define side_t int)
+(define diag_t int)
+(define uplo_t int)
+
 (define rank0_t '*)
 (define rank1_t '*)
 (define rank2_t '*)
@@ -54,22 +59,27 @@
 ; https://github.com/flame/blis/blob/master/docs/BLISTypedAPI.md
 ; https://github.com/flame/blis/blob/master/frame/include/bli_type_defs.h
 
+; trans_t
 (define BLIS_NO_TRANSPOSE 0)
 (define BLIS_TRANSPOSE 8)
 (define BLIS_CONJ_NO_TRANSPOSE 16)
 (define BLIS_CONJ_TRANSPOSE 24)
 
+; conj_t
 (define BLIS_NO_CONJUGATE 0)
 (define BLIS_CONJUGATE (ash 1 4))
 
+; diag_t
 (define BLIS_NONUNIT_DIAG 0)
 (define BLIS_UNIT_DIAG (ash 1 8))
 
+; uplo_t
 (define BLIS_ZEROS 0)
 (define BLIS_LOWER (logior (ash 1 7) (ash 1 6)))
 (define BLIS_UPPER (logior (ash 1 5) (ash 1 6)))
 (define BLIS_DENSE (ash 1 5))
 
+; side_t
 (define BLIS_LEFT 0)
 (define BLIS_RIGHT 1)
 
@@ -105,12 +115,12 @@
 
 (define bli_error_checking_level_set
   (pointer->procedure void (dynamic-func "bli_error_checking_level_set" libblis) (list gint_t)))
-(define (bli-error-checking-level-set level)
+(define (blis-error-checking-level-set! level)
   (unless (<= 0 level 1) (throw 'invalid-error-checking-level level))
   (bli_error_checking_level_set level))
 
 (export BLIS_NO_ERROR_CHECKING BLIS_FULL_ERROR_CHECKING
-        bli-error-checking-level-set)
+        blis-error-checking-level-set!)
 
 
 ; -----------------------------
@@ -155,6 +165,88 @@ void bli_?copyv
 (define-auto (blis-copyv! conjX X Y) X blis-?copyv!)
 
 #|
+void bli_?axpyv
+     (
+       conj_t  conjx,
+       dim_t   n,
+       ctype*  alpha,
+       ctype*  x, inc_t incx,
+       ctype*  y, inc_t incy
+     )
+|#
+
+(define-syntax define-axpyv
+  (lambda (x)
+    (syntax-case x ()
+      ((_ type_ blis-name name!)
+       (with-syntax ((type #'(quote type_)))
+         #`(begin
+             (define blis-name (pointer->procedure
+                                void (dynamic-func (symbol->string (syntax->datum #'blis-name)) libblis)
+                                (list conj_t dim_t rank0_t rank1_t inc_t rank1_t inc_t)))
+             (define (name! conjX alpha X Y)
+               #,(let ((t (syntax->datum #'type_)))
+                   (format #f "(~a conjx [conj_t] alpha [~a] x [#~a(…)] y [#~a(…)]) => y\n\n~a"
+                           (symbol->string (syntax->datum #'name!)) t t t
+                           "y := y + alpha * conjx(x)"))
+               (check-2-arrays X Y 1 type)
+               (blis-name conjX (array-length X)
+                          (scalar->arg type alpha)
+                          (pointer-to-first X) (stride X 0)
+                          (pointer-to-first Y) (stride Y 0))
+               Y)))))))
+
+(define-sdcz axpyv bli_?axpyv blis-?axpyv!)
+(define-auto (blis-axpyv! conjX alpha X Y) X blis-?axpyv!)
+
+#|
+B := B + alpha * transa(A)
+
+void bli_?axpym
+     (
+       doff_t  diagoffa,
+       diag_t  diaga,
+       uplo_t  uploa,
+       trans_t transa,
+       dim_t   m,
+       dim_t   n,
+       ctype*  alpha,
+       ctype*  a, inc_t rsa, inc_t csa,
+       ctype*  b, inc_t rsb, inc_t csb
+     )
+|#
+
+(define-syntax define-axpym
+  (lambda (x)
+    (syntax-case x ()
+      ((_ type_ blis-name name!)
+       (with-syntax ((type #'(quote type_)))
+         #`(begin
+             (define blis-name (pointer->procedure
+                                void (dynamic-func (symbol->string (syntax->datum #'blis-name)) libblis)
+                                (list doff_t diag_t uplo_t trans_t dim_t dim_t rank0_t
+                                      rank2_t inc_t inc_t
+                                      rank2_t inc_t inc_t)))
+             (define (name! diagoffa diaga uploa transa alpha A B)
+               #,(let ((t (syntax->datum #'type_)))
+                   (format #f "(~a diagoffa diaga uploa transa alpha A B) => b\n\n~a"
+                           (symbol->string (syntax->datum #'name!))
+                           "B := B + alpha * transa(A)"))
+               (check-array A 2 type)
+               (check-array B 2 type)
+               (let ((M (dim B 0))
+                     (N (dim B 1)))
+                 (unless (= M (dim A (if (tr? transa) 1 0))) (throw 'mismatched-B-rows))
+                 (unless (= N (dim A (if (tr? transa) 0 1))) (throw 'mismatched-B-columns))
+                 (blis-name diagoffa diaga uploa transa M N (scalar->arg type alpha)
+                            (pointer-to-first A) (stride A 0) (stride A 1)
+                            (pointer-to-first B) (stride B 0) (stride B 1))
+                 B))))))))
+
+(define-sdcz axpym bli_?axpym blis-?axpym!)
+(define-auto (blis-axpym! diagoffa diaga uploa transa alpha A B) A blis-?axpym!)
+
+#|
 y := beta * y + alpha * conjx(x)
 
 void bli_?axpbyv
@@ -193,40 +285,6 @@ void bli_?axpbyv
 (define-sdcz axpbyv bli_?axpbyv blis-?axpbyv!)
 (define-auto (blis-axpbyv! conjX alpha X beta Y) X blis-?axpbyv!)
 
-#|
-void bli_?axpyv
-     (
-       conj_t  conjx,
-       dim_t   n,
-       ctype*  alpha,
-       ctype*  x, inc_t incx,
-       ctype*  y, inc_t incy
-     )
-|#
-
-(define-syntax define-axpyv
-  (lambda (x)
-    (syntax-case x ()
-      ((_ type_ blis-name name!)
-       (with-syntax ((type #'(quote type_)))
-         #`(begin
-             (define blis-name (pointer->procedure
-                                void (dynamic-func (symbol->string (syntax->datum #'blis-name)) libblis)
-                                (list conj_t dim_t rank0_t rank1_t inc_t rank1_t inc_t)))
-             (define (name! conjX alpha X Y)
-               #,(let ((t (syntax->datum #'type_)))
-                   (format #f "(~a conjx [conj_t] alpha [~a] x [#~a(…)] y [#~a(…)]) => y\n\n~a"
-                           (symbol->string (syntax->datum #'name!)) t t t
-                           "y := y + alpha * conjx(x)"))
-               (check-2-arrays X Y 1 type)
-               (blis-name conjX (array-length X)
-                          (scalar->arg type alpha)
-                          (pointer-to-first X) (stride X 0)
-                          (pointer-to-first Y) (stride Y 0))
-               Y)))))))
-
-(define-sdcz axpyv bli_?axpyv blis-?axpyv!)
-(define-auto (blis-axpyv! conjX alpha X Y) X blis-?axpyv!)
 
 #|
 void bli_?dotv
