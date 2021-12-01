@@ -79,6 +79,7 @@ $GUILE ... etc.
 * `sdaxpyv` `ddaxpyv` `cdaxpyv` `zdaxpyv`
 * `sdaxpbyv` `ddaxpbyv` `cdaxpbyv` `zdaxpbyv`
 * `sdotv` `ddotv` `cdotv` `zdotv`
+* `sdaxpym` `ddaxpym` `cdaxpym` `zdaxpym`
 
 #### BLIS level 2
 

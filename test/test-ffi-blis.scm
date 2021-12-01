@@ -102,18 +102,15 @@
 
 
 ; ---------------------------------
-; ?axpbym BUG
+; ?axpbym FIXME coverage of flags
 ; ---------------------------------
 
-#|
-(define pointer-to-first (@@ (ffi blis) pointer-to-first))
-(define scalar->arg (@@ (ffi blis) scalar->arg))
-(blis-error-checking-level-set! BLIS_FULL_ERROR_CHECKING)
-
 (define A (array-copy #2f64((1 2) (3 4))))
-(define B (array-copy #2f64((9 8) (7 6))))
-(blis-daxpym! 0 BLIS_NONUNIT_DIAG BLIS_DENSE BLIS_NO_TRANSPOSE 3 A B)
-|#
+(let ((B (array-copy #2f64((9 8) (7 6)))))
+  (blis-daxpym! 0 BLIS_NONUNIT_DIAG BLIS_DENSE BLIS_NO_TRANSPOSE 3 A B)
+  (test-equal B #2f64((12. 14.) (16. 18.)))
+  (blis-daxpym! 0 BLIS_NONUNIT_DIAG BLIS_DENSE BLIS_TRANSPOSE 3 A B)
+  (test-equal B #2f64((15. 23.) (22. 30.))))
 
 
 ; ---------------------------------

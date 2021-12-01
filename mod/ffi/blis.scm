@@ -67,17 +67,17 @@
 
 ; conj_t
 (define BLIS_NO_CONJUGATE 0)
-(define BLIS_CONJUGATE (ash 1 4))
+(define BLIS_CONJUGATE 16)
 
 ; diag_t
 (define BLIS_NONUNIT_DIAG 0)
-(define BLIS_UNIT_DIAG (ash 1 8))
+(define BLIS_UNIT_DIAG 256)
 
 ; uplo_t
 (define BLIS_ZEROS 0)
-(define BLIS_LOWER (logior (ash 1 7) (ash 1 6)))
-(define BLIS_UPPER (logior (ash 1 5) (ash 1 6)))
-(define BLIS_DENSE (ash 1 5))
+(define BLIS_LOWER 192)
+(define BLIS_UPPER 96)
+(define BLIS_DENSE 224)
 
 ; side_t
 (define BLIS_LEFT 0)
