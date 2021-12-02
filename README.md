@@ -8,7 +8,7 @@ bindings are for **BLIS**' ‘typed’ API<sup id="a2">[2](#f2)</sup>.
 
 To use the bindings, import `(ffi blis)`. **BLIS** will be loaded from the
 default dynamic library path (see ‘Installation notes’ below). There are up to
-three bindings for each function, here using `ZGEMM` as an example:
+three bindings for each function, here using `zgemm` as an example:
 
 - `bli_zgemm` (raw binding): the raw C function by `pointer->procedure`. Don't
   use this if you aren't familiar with Guile's FFI.
@@ -75,20 +75,17 @@ $GUILE ... etc.
 
 #### BLIS level 1
 
-* `scopyv` `dcopyv` `ccopyv` `zcopyv`
-* `sdaxpyv` `ddaxpyv` `cdaxpyv` `zdaxpyv`
-* `sdaxpbyv` `ddaxpbyv` `cdaxpbyv` `zdaxpbyv`
-* `sdotv` `ddotv` `cdotv` `zdotv`
-* `saxpym` `daxpym` `caxpym` `zaxpym`
+* `setv` `copyv` `axpyv` `axpbyv`
+* `dotv`
+* `axpym`
 
 #### BLIS level 2
 
-* `sgemv` `dgemv` `cgemv` `zgemv`
-* `sger` `dger` `cger` `zger`
+* `gemv` `ger`
 
 #### BLIS level 3
 
-* `sgemm` `dgemm` `cgemm` `zgemm`
+* `gemm`
 
 ***
 

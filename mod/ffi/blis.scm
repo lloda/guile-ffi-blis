@@ -128,6 +128,40 @@
 ; -----------------------------
 
 #|
+x := conjalpha(alpha)
+
+void bli_?setv
+     (
+       conj_t  conjalpha,
+       dim_t   n,
+       ctype*  alpha,
+       ctype*  x, inc_t incx
+     );
+|#
+
+(define-syntax define-setv
+  (lambda (x)
+    (syntax-case x ()
+      ((_ type_ blis-name name!)
+       (with-syntax ((type #'(quote type_)))
+         #`(begin
+             (define blis-name (pointer->procedure
+                                void (dynamic-func #,(symbol->string (syntax->datum #'blis-name)) libblis)
+                                (list conj_t dim_t rank0_t rank1_t inc_t)))
+             (define (name! conjalpha alpha X)
+               #,(let ((t (syntax->datum #'type_)))
+                   (format #f "(~a conjalpha alpha x) => y\n\n~a"
+                           (symbol->string (syntax->datum #'name!))
+                           "x := conjalpha(alpha)"))
+               (check-array X 1 type)
+               (blis-name conjalpha (array-length X) (scalar->arg type alpha)
+                          (pointer-to-first X) (stride X 0))
+               X)))))))
+
+(define-sdcz setv bli_?setv blis-?setv!)
+(define-auto (blis-setv! conjalpha alpha X) X blis-?setv!)
+
+#|
 y := conjx(x)
 
 void bli_?copyv

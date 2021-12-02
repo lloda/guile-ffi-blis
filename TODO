@@ -3,12 +3,12 @@
 Help: [C-uc .] insert timestamp [C-cc] flip checkbox [C-uucc] partial flip checkbox [C-ct] flip TODO.
 
 * TODO coverage [0/0]
-  * wrap BLIS level 1v [2/4]
-    * [X] copyv axpyv axpbyv
-    * [ ] functional variants for copyv axpyv axpbyv
+  * wrap BLIS level 1v [3/5]
+    * [X] setv copyv axpyv axpbyv
+    * [ ] functional variants for setv copyv axpyv axpbyv
     * [X] dotv
-    * [ ] addv amaxv dotxv invertv scal2v scalv setv subv swapv xpbyvdotv
-  * wrap BLIS level 1m [1/2]
+    * [ ] addv amaxv dotxv invertv scal2v scalv subv swapv xpbyvdotv
+  * wrap BLIS level 1m [1/3]
     * [X] axpym copym
     * [ ] proper tests for axpym copym
     * [ ] addm scalm scal2m setm subm
@@ -21,6 +21,9 @@ Help: [C-uc .] insert timestamp [C-cc] flip checkbox [C-uucc] partial flip check
     * [X] for typed bindings
     * [ ] for raw bindings (see bug below)
   * [ ] module level doc
+
+* TODO extras [0/2]
+  * [-] typed trans_t conj_t side_t uplo_t diag_t
 
 * TODO bugs [0/1]
   * [ ] (help (ffi blis)) doesn't work

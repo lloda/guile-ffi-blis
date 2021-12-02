@@ -49,6 +49,26 @@
 
 
 ; ---------------------------------
+; ?setv
+; ---------------------------------
+
+(let* ((X (array-copy #f64(1 2 3 4)))
+       (Y (blis-dsetv! BLIS_NO_CONJUGATE 3. X)))
+  (test-eq X Y)
+  (test-equal X (make-typed-array 'f64 3 4)))
+
+(let* ((X (array-copy #c64(1 2 3 4)))
+       (Y (blis-zsetv! BLIS_CONJUGATE 3+9i X)))
+  (test-eq X Y)
+  (test-equal X (make-typed-array 'c64 3-9i 4)))
+
+(let* ((X (array-copy #c64(1 2 3 4)))
+       (Y (blis-setv! BLIS_NO_CONJUGATE 3+9i X)))
+  (test-eq X Y)
+  (test-equal X (make-typed-array 'c64 3+9i 4)))
+
+
+; ---------------------------------
 ; ?copyv ?axbyv ?axpbyv
 ; ---------------------------------
 
