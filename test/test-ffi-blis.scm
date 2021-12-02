@@ -102,7 +102,7 @@
 
 
 ; ---------------------------------
-; ?axpbym FIXME coverage of flags
+; ?axpbym ?copym FIXME coverage of flags
 ; ---------------------------------
 
 (define A (array-copy #2f64((1 2) (3 4))))
@@ -110,7 +110,11 @@
   (blis-daxpym! 0 BLIS_NONUNIT_DIAG BLIS_DENSE BLIS_NO_TRANSPOSE 3 A B)
   (test-equal B #2f64((12. 14.) (16. 18.)))
   (blis-daxpym! 0 BLIS_NONUNIT_DIAG BLIS_DENSE BLIS_TRANSPOSE 3 A B)
-  (test-equal B #2f64((15. 23.) (22. 30.))))
+  (test-equal B #2f64((15. 23.) (22. 30.)))
+  (let ((C (array-copy A)))
+    (blis-dcopym! 0 BLIS_NONUNIT_DIAG BLIS_DENSE BLIS_TRANSPOSE B C)
+    (test-equal B #2f64((15. 23.) (22. 30.)))
+    (test-equal C #2f64((15. 22.) (23. 30.)))))
 
 
 ; ---------------------------------

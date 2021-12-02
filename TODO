@@ -9,17 +9,18 @@ Help: [C-uc .] insert timestamp [C-cc] flip checkbox [C-uucc] partial flip check
     * [X] dotv
     * [ ] addv amaxv dotxv invertv scal2v scalv setv subv swapv xpbyvdotv
   * wrap BLIS level 1m [1/2]
-    * [X] axpym
-    * [ ] proper tests for axpym
-    * [ ] addm copym scalm scal2m setm subm
+    * [X] axpym copym
+    * [ ] proper tests for axpym copym
+    * [ ] addm scalm scal2m setm subm
   * wrap BLIS utility, at least some of these [0/1]
     * [ ] asumv norm1v normfv normiv norm1m normfm normim mkherm mksymm mktrim randv randm sumsqv
 
-* TODO documentation [0/3]
+* TODO documentation [0/2]
+  * [-] docstrings
+    * [ ] for funcional bindings (define-auto)
+    * [X] for typed bindings
+    * [ ] for raw bindings (see bug below)
   * [ ] module level doc
-  * [ ] docstrings for 3rd level functions
-  * [ ] docstrings for 2nd level functions
-  * [ ] docstrings for 1st level functions
 
 * TODO bugs [0/1]
   * [ ] (help (ffi blis)) doesn't work

@@ -165,6 +165,49 @@ void bli_?copyv
 (define-auto (blis-copyv! conjX X Y) X blis-?copyv!)
 
 #|
+y := conjx(x)
+
+void bli_?copym
+     (
+       conj_t  conjx,
+       dim_t   n,
+       ctype*  alpha,
+       ctype*  x, inc_t incx,
+       ctype*  beta,
+       ctype*  y, inc_t incy
+     )
+|#
+
+(define-syntax define-copym
+  (lambda (x)
+    (syntax-case x ()
+      ((_ type_ blis-name name!)
+       (with-syntax ((type #'(quote type_)))
+         #`(begin
+             (define blis-name (pointer->procedure
+                                void (dynamic-func #,(symbol->string (syntax->datum #'blis-name)) libblis)
+                                (list doff_t diag_t uplo_t trans_t dim_t dim_t
+                                      rank2_t inc_t inc_t rank2_t inc_t inc_t)))
+             (define (name! diagoffa diaga uploa transa A B)
+               #,(let ((t (syntax->datum #'type_)))
+                   (format #f "(~a diagoffa diaga uploa transa A B) => B\n\n~a"
+                           (symbol->string (syntax->datum #'name!))
+                           "B := transa(A)"))
+               (check-array A 2 type)
+               (check-array B 2 type)
+               (let ((M (dim B 0))
+                     (N (dim B 1)))
+                 (unless (= M (dim A (if (tr? transa) 1 0))) (throw 'mismatched-B-rows))
+                 (unless (= N (dim A (if (tr? transa) 0 1))) (throw 'mismatched-B-columns))
+                 (blis-name diagoffa diaga uploa transa M N
+                            (pointer-to-first A) (stride A 0) (stride A 1)
+                            (pointer-to-first B) (stride B 0) (stride B 1))
+                 B))))))))
+
+(define-sdcz copym bli_?copym blis-?copym!)
+(define-auto (blis-copym! diagoffa diaga uploa transa A B) A blis-?copym!)
+
+#|
 void bli_?axpyv
      (
        conj_t  conjx,
@@ -229,7 +272,7 @@ void bli_?axpym
                                       rank2_t inc_t inc_t)))
              (define (name! diagoffa diaga uploa transa alpha A B)
                #,(let ((t (syntax->datum #'type_)))
-                   (format #f "(~a diagoffa diaga uploa transa alpha A B) => b\n\n~a"
+                   (format #f "(~a diagoffa diaga uploa transa alpha A B) => B\n\n~a"
                            (symbol->string (syntax->datum #'name!))
                            "B := B + alpha * transa(A)"))
                (check-array A 2 type)
