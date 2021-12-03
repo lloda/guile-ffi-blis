@@ -69,6 +69,21 @@
 
 
 ; ---------------------------------
+; ?setm
+; ---------------------------------
+
+(let* ((A (array-copy #2f64((1 2 3) (4 5 6))))
+       (B (blis-dsetm! BLIS_NO_CONJUGATE 0 BLIS_NONUNIT_DIAG BLIS_DENSE 3. A)))
+  (test-eq A B)
+  (test-equal A (make-typed-array 'f64 3. 2 3)))
+
+(let* ((A (array-copy #2c64((1 2 3) (4 5 6))))
+       (B (blis-setm! BLIS_CONJUGATE 0 BLIS_NONUNIT_DIAG BLIS_DENSE 3+9i A)))
+  (test-eq A B)
+  (test-equal A (make-typed-array 'c64 3-9i 2 3)))
+
+
+; ---------------------------------
 ; ?copyv ?axbyv ?axpbyv
 ; ---------------------------------
 
