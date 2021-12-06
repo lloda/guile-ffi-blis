@@ -77,7 +77,7 @@ $GUILE ... etc.
 
 * `setv` `copyv` `axpyv` `axpbyv`
 * `dotv`
-* `axpym`
+* `setm` `copym` `axpym`
 
 #### BLIS level 2
 

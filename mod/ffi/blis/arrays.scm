@@ -11,7 +11,6 @@
 
 (define-module (ffi blis arrays)
   #:export (syntax->list
-            srfi-4-type-size
             check-array check-2-arrays
             stride dim
             define-sdcz
@@ -40,15 +39,6 @@
                  (unless (= 0 alo blo) (throw 'bad-base-indices sha shb))
                  (unless (= ahi bhi) (throw 'mismatched-sizes sha shb))))
       sha shb)))
-
-(define (srfi-4-type-size stype)
-  (case stype
-    ((s8 u8 uv8) 1)
-    ((s16 u16) 2)
-    ((f32 s32 u32) 4)
-    ((c32 f64 s64 u64) 8)
-    ((c64) 16)
-    (else (throw 'bad-srfi-4-type-type stype))))
 
 ; https://www.scheme.com/csug8/syntax.html §11.3
 (define syntax->list

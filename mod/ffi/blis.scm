@@ -14,7 +14,7 @@
 
 (define-module (ffi blis))
 (import (system foreign) (system foreign-library) (ice-9 match)
-        (srfi srfi-1) (srfi srfi-11) (srfi srfi-26) (ffi blis arrays))
+        (srfi 1) (srfi 11) (srfi 26) (srfi srfi-4 gnu) (ffi blis arrays))
 
 ; TODO As an alternative go through installation.
 (define libblis (dynamic-link (let ((lpath (getenv "GUILE_FFI_BLIS_LIBPATH"))
@@ -45,8 +45,8 @@
 ; -----------------------------
 
 (define (pointer-to-first A)
-  (bytevector->pointer (shared-array-root A)
-                       (* (shared-array-offset A) (srfi-4-type-size (array-type A)))))
+  (let ((root (shared-array-root A)))
+    (bytevector->pointer root (* (shared-array-offset A) (srfi-4-vector-type-size root)))))
 
 (define (scalar->arg stype a)
   (bytevector->pointer (make-typed-array stype a 1) 0))
