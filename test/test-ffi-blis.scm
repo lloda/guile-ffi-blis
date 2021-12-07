@@ -14,11 +14,11 @@
 (test-begin "ffi-blis")
 
 (define (apply-transpose-flag A flag)
-  (cond ((or (equal? flag BLIS_NO_TRANSPOSE) (equal? flag BLIS_NO_CONJUGATE)) A)
-        ((equal? flag BLIS_TRANSPOSE) (transpose-array A 1 0))
-        ((or (equal? flag BLIS_CONJ_NO_TRANSPOSE) (equal? flag BLIS_CONJUGATE))
+  (cond ((or (eq? flag BLIS-NO-TRANSPOSE) (eq? flag BLIS-NO-CONJUGATE)) A)
+        ((eq? flag BLIS-TRANSPOSE) (transpose-array A 1 0))
+        ((or (eq? flag BLIS-CONJ-NO-TRANSPOSE) (eq? flag BLIS-CONJUGATE))
          (let ((B (array-copy A))) (array-map! B conj A) B))
-        ((equal? flag BLIS_CONJ_TRANSPOSE)
+        ((eq? flag BLIS-CONJ-TRANSPOSE)
          (let ((B (array-copy A))) (array-map! B conj A) (transpose-array B 1 0)))
         (else (throw 'bad-transpose-flag flag))))
 
@@ -53,17 +53,17 @@
 ; ---------------------------------
 
 (let* ((X (array-copy #f64(1 2 3 4)))
-       (Y (blis-dsetv! BLIS_NO_CONJUGATE 3. X)))
+       (Y (blis-dsetv! BLIS-NO-CONJUGATE 3. X)))
   (test-eq X Y)
   (test-equal X (make-typed-array 'f64 3 4)))
 
 (let* ((X (array-copy #c64(1 2 3 4)))
-       (Y (blis-zsetv! BLIS_CONJUGATE 3+9i X)))
+       (Y (blis-zsetv! BLIS-CONJUGATE 3+9i X)))
   (test-eq X Y)
   (test-equal X (make-typed-array 'c64 3-9i 4)))
 
 (let* ((X (array-copy #c64(1 2 3 4)))
-       (Y (blis-setv! BLIS_NO_CONJUGATE 3+9i X)))
+       (Y (blis-setv! BLIS-NO-CONJUGATE 3+9i X)))
   (test-eq X Y)
   (test-equal X (make-typed-array 'c64 3+9i 4)))
 
@@ -73,12 +73,12 @@
 ; ---------------------------------
 
 (let* ((A (array-copy #2f64((1 2 3) (4 5 6))))
-       (B (blis-dsetm! BLIS_NO_CONJUGATE 0 BLIS_NONUNIT_DIAG BLIS_DENSE 3. A)))
+       (B (blis-dsetm! BLIS-NO-CONJUGATE 0 BLIS-NONUNIT-DIAG BLIS-DENSE 3. A)))
   (test-eq A B)
   (test-equal A (make-typed-array 'f64 3. 2 3)))
 
 (let* ((A (array-copy #2c64((1 2 3) (4 5 6))))
-       (B (blis-setm! BLIS_CONJUGATE 0 BLIS_NONUNIT_DIAG BLIS_DENSE 3+9i A)))
+       (B (blis-setm! BLIS-CONJUGATE 0 BLIS-NONUNIT-DIAG BLIS-DENSE 3+9i A)))
   (test-eq A B)
   (test-equal A (make-typed-array 'c64 3-9i 2 3)))
 
@@ -92,7 +92,7 @@
   (define (ref conjX alpha X beta Y)
     (array-map! Y
       (lambda (x y)
-        (+ (* beta y) (* alpha (if (eqv? conjX BLIS_CONJUGATE) (conj x) x))))
+        (+ (* beta y) (* alpha (if (eqv? conjX BLIS-CONJUGATE) (conj x) x))))
       X Y)
     Y)
 
@@ -131,7 +131,7 @@
                            axpbyv
                            conj-A scalar-cases make-A scalar-cases make-B)))
       (list-product
-       (list BLIS_CONJUGATE BLIS_NO_CONJUGATE)
+       (list BLIS-CONJUGATE BLIS-NO-CONJUGATE)
        (list make-v-compact make-v-offset make-v-strided)
        (list make-v-compact make-v-offset make-v-strided)))))
 
@@ -142,12 +142,12 @@
 
 (define A (array-copy #2f64((1 2) (3 4))))
 (let ((B (array-copy #2f64((9 8) (7 6)))))
-  (blis-daxpym! 0 BLIS_NONUNIT_DIAG BLIS_DENSE BLIS_NO_TRANSPOSE 3 A B)
+  (blis-daxpym! 0 BLIS-NONUNIT-DIAG BLIS-DENSE BLIS-NO-TRANSPOSE 3 A B)
   (test-equal B #2f64((12. 14.) (16. 18.)))
-  (blis-daxpym! 0 BLIS_NONUNIT_DIAG BLIS_DENSE BLIS_TRANSPOSE 3 A B)
+  (blis-daxpym! 0 BLIS-NONUNIT-DIAG BLIS-DENSE BLIS-TRANSPOSE 3 A B)
   (test-equal B #2f64((15. 23.) (22. 30.)))
   (let ((C (array-copy A)))
-    (blis-dcopym! 0 BLIS_NONUNIT_DIAG BLIS_DENSE BLIS_TRANSPOSE B C)
+    (blis-dcopym! 0 BLIS-NONUNIT-DIAG BLIS-DENSE BLIS-TRANSPOSE B C)
     (test-equal B #2f64((15. 23.) (22. 30.)))
     (test-equal C #2f64((15. 22.) (23. 30.)))))
 
@@ -162,8 +162,8 @@
     (let ((rho 0))
       (array-for-each
        (lambda (a b)
-         (set! rho (+ rho (* (if (= conj-A BLIS_CONJUGATE) (conj a) a)
-                             (if (= conj-B BLIS_CONJUGATE) (conj b) b)))))
+         (set! rho (+ rho (* (if (eq? conj-A BLIS-CONJUGATE) (conj a) a)
+                             (if (eq? conj-B BLIS-CONJUGATE) (conj b) b)))))
        A B)
       rho))
 
@@ -181,8 +181,8 @@
               ((conj-A conj-B make-A make-B)
                (test-dotv type blis-dotv conj-A conj-B make-A make-B)))
     (list-product
-     (list BLIS_CONJUGATE BLIS_NO_CONJUGATE)
-     (list BLIS_CONJUGATE BLIS_NO_CONJUGATE)
+     (list BLIS-CONJUGATE BLIS-NO-CONJUGATE)
+     (list BLIS-CONJUGATE BLIS-NO-CONJUGATE)
      (list make-v-compact make-v-offset make-v-strided)
      (list make-v-compact make-v-offset make-v-strided))))
 
@@ -226,15 +226,15 @@
       (let ((A (fill-A2! (make-typed-array type *unspecified* 4 3)))
             (B (fill-A2! (make-typed-array type *unspecified* 3 5)))
             (C (fill-A2! (make-typed-array type *unspecified* 4 5))))
-        (test-gemm "gemm-1" blis-gemm! BLIS_NO_TRANSPOSE BLIS_NO_TRANSPOSE 1. A B 1. C)
-        (test-gemm "gemm-2" blis-gemm! BLIS_TRANSPOSE BLIS_NO_TRANSPOSE 1. A C 1. B)
-        (test-gemm "gemm-3" blis-gemm! BLIS_NO_TRANSPOSE BLIS_TRANSPOSE 1. C B 1. A))
+        (test-gemm "gemm-1" blis-gemm! BLIS-NO-TRANSPOSE BLIS-NO-TRANSPOSE 1. A B 1. C)
+        (test-gemm "gemm-2" blis-gemm! BLIS-TRANSPOSE BLIS-NO-TRANSPOSE 1. A C 1. B)
+        (test-gemm "gemm-3" blis-gemm! BLIS-NO-TRANSPOSE BLIS-TRANSPOSE 1. C B 1. A))
       (let ((A (fill-A2! (transpose-array (make-typed-array 'f64 *unspecified* 4 3) 1 0)))
             (B (fill-A2! (transpose-array (make-typed-array 'f64 *unspecified* 3 5) 1 0)))
             (C (fill-A2! (transpose-array (make-typed-array 'f64 *unspecified* 4 5) 1 0))))
-        (test-gemm "gemm-4" blis-dgemm! BLIS_TRANSPOSE BLIS_TRANSPOSE 1. A B 1. (transpose-array C 1 0))
-        (test-gemm "gemm-5" blis-dgemm! BLIS_NO_TRANSPOSE BLIS_TRANSPOSE 1. A C 1. (transpose-array B 1 0))
-        (test-gemm "gemm-6" blis-dgemm! BLIS_TRANSPOSE BLIS_NO_TRANSPOSE 1. C B 1. (transpose-array A 1 0)))
+        (test-gemm "gemm-4" blis-dgemm! BLIS-TRANSPOSE BLIS-TRANSPOSE 1. A B 1. (transpose-array C 1 0))
+        (test-gemm "gemm-5" blis-dgemm! BLIS-NO-TRANSPOSE BLIS-TRANSPOSE 1. A C 1. (transpose-array B 1 0))
+        (test-gemm "gemm-6" blis-dgemm! BLIS-TRANSPOSE BLIS-NO-TRANSPOSE 1. C B 1. (transpose-array A 1 0)))
 
       (define (with-matrix-types types-AB types-C)
         (for-each
@@ -246,8 +246,8 @@
                                       (fill-A2! (make-B type)) 2. (fill-A2! (make-C type)))))
           (apply list-product
             (append (list types-AB types-AB types-C)
-                    (make-list 2 (list BLIS_TRANSPOSE BLIS_NO_TRANSPOSE
-                                       BLIS_CONJ_NO_TRANSPOSE BLIS_CONJ_TRANSPOSE))))))
+                    (make-list 2 (list BLIS-TRANSPOSE BLIS-NO-TRANSPOSE
+                                       BLIS-CONJ-NO-TRANSPOSE BLIS-CONJ-TRANSPOSE))))))
 
       (define with-overlap (list make-M-z1 make-M-z1 make-M-z00 make-M-overlap make-M-overlap-reversed))
       (define without-overlap (list make-M-c-order make-M-fortran-order make-M-offset
@@ -309,8 +309,8 @@
 
            (apply list-product
              (list M-types v1-types v2-types
-                   (list BLIS_TRANSPOSE BLIS_NO_TRANSPOSE BLIS_CONJ_NO_TRANSPOSE BLIS_CONJ_TRANSPOSE)
-                   (list BLIS_NO_CONJUGATE BLIS_CONJUGATE)))))
+                   (list BLIS-TRANSPOSE BLIS-NO-TRANSPOSE BLIS-CONJ-NO-TRANSPOSE BLIS-CONJ-TRANSPOSE)
+                   (list BLIS-NO-CONJUGATE BLIS-CONJUGATE)))))
 
        (define with-overlap-M (list make-M-z1 make-M-z1 make-M-z00 make-M-overlap make-M-overlap-reversed))
        (define with-overlap-v (list make-v-z))
@@ -375,8 +375,8 @@
           (list make-v-compact make-v-strided make-v-offset make-v-strided-reversed)
           (list make-M-c-order make-M-fortran-order make-M-offset
                 make-M-strided make-M-strided-both make-M-strided-reversed)
-          (list BLIS_NO_CONJUGATE BLIS_CONJUGATE)
-          (list BLIS_NO_CONJUGATE BLIS_CONJUGATE)))))
+          (list BLIS-NO-CONJUGATE BLIS-CONJUGATE)
+          (list BLIS-NO-CONJUGATE BLIS-CONJUGATE)))))
   `((f32 ,blis-sger!)
     (f64 ,blis-dger!)
     (c32 ,blis-cger!)

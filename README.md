@@ -10,12 +10,17 @@ To use the bindings, import `(ffi blis)`. **BLIS** will be loaded from the
 default dynamic library path (see ‘Installation notes’ below). There are up to
 three bindings for each function, here using `zgemm` as an example:
 
-- `bli_zgemm` (raw binding): the raw C function by `pointer->procedure`. Don't
-  use this if you aren't familiar with Guile's FFI.
+- `bli_zgemm` (raw binding): the raw C function by `pointer->procedure`. Don't use
+  this if you aren't familiar with Guile's FFI. These functions take numeric
+  constants for the `trans_t` parameters, etc. which have the same names as in C
+  (like `BLIS_TRANSPOSE`, note the underscore).
 
 - `blis-zgemm!` (typed binding): takes array arguments of type `'c64` and operates by
-  effect, without making copies. All the arguments must be properly sized. For
-  convenience, this function returns the output argument.
+  effect, without making copies. All the arguments must be properly sized. These
+  functions take typed constants for the `trans_t` parameters, which have hyphened
+  names (like `BLIS-TRANSPOSE`). This allows `guile-ffi-blis` to signal an error if
+  you e.g. pass `BLIS-NO-CONJUGATE` for a `trans_t` parameter. For convenience, this
+  function returns the output argument.
 
 - `blis-zgemm` (functional binding): takes array arguments of compatible types and
   returns a newly constructed array. The arguments will be converted as

@@ -14,11 +14,12 @@
 
 (define-module (ffi blis))
 (import (system foreign) (system foreign-library) (ice-9 match)
-        (srfi 1) (srfi 11) (srfi 26) (srfi srfi-4 gnu) (ffi blis arrays))
+        (srfi 1) (srfi 11) (srfi 26) (srfi srfi-4 gnu) (srfi srfi-9 gnu)
+        (ffi blis arrays))
 
 ; TODO As an alternative go through installation.
 (define libblis (dynamic-link (let ((lpath (getenv "GUILE_FFI_BLIS_LIBPATH"))
-                                     (lname (or (getenv "GUILE_FFI_BLIS_LIBNAME") "libblis")))
+                                    (lname (or (getenv "GUILE_FFI_BLIS_LIBNAME") "libblis")))
                                  (if (and lpath (not (string=? lpath "")))
                                    (string-append lpath file-name-separator-string lname)
                                    lname))))
@@ -28,6 +29,12 @@
 (define dim_t gint_t)
 (define inc_t gint_t)
 (define doff_t gint_t)
+
+(define-immutable-record-type <trans_t> (make-trans_t val) trans_t? (val trans_t-val))
+(define-immutable-record-type <conj_t> (make-conj_t val) conj_t? (val conj_t-val))
+(define-immutable-record-type <side_t> (make-side_t val) side_t? (val side_t-val))
+(define-immutable-record-type <diag_t> (make-diag_t val) diag_t? (val diag_t-val))
+(define-immutable-record-type <uplo_t> (make-uplo_t val) uplo_t? (val uplo_t-val))
 
 (define trans_t int)
 (define conj_t int)
@@ -59,47 +66,68 @@
 ; https://github.com/flame/blis/blob/master/docs/BLISTypedAPI.md
 ; https://github.com/flame/blis/blob/master/frame/include/bli_type_defs.h
 
-; trans_t
 (define BLIS_NO_TRANSPOSE 0)
 (define BLIS_TRANSPOSE 8)
 (define BLIS_CONJ_NO_TRANSPOSE 16)
 (define BLIS_CONJ_TRANSPOSE 24)
 
-; conj_t
 (define BLIS_NO_CONJUGATE 0)
 (define BLIS_CONJUGATE 16)
 
-; diag_t
 (define BLIS_NONUNIT_DIAG 0)
 (define BLIS_UNIT_DIAG 256)
 
-; uplo_t
 (define BLIS_ZEROS 0)
 (define BLIS_LOWER 192)
 (define BLIS_UPPER 96)
 (define BLIS_DENSE 224)
 
-; side_t
 (define BLIS_LEFT 0)
 (define BLIS_RIGHT 1)
 
+(define BLIS-NO-TRANSPOSE (make-trans_t BLIS_NO_TRANSPOSE))
+(define BLIS-TRANSPOSE (make-trans_t BLIS_TRANSPOSE))
+(define BLIS-CONJ-NO-TRANSPOSE (make-trans_t BLIS_CONJ_NO_TRANSPOSE))
+(define BLIS-CONJ-TRANSPOSE (make-trans_t BLIS_CONJ_TRANSPOSE))
+
+(define BLIS-NO-CONJUGATE (make-conj_t BLIS_NO_CONJUGATE))
+(define BLIS-CONJUGATE (make-conj_t BLIS_CONJUGATE))
+
+(define BLIS-NONUNIT-DIAG (make-diag_t BLIS_NONUNIT_DIAG))
+(define BLIS-UNIT-DIAG (make-diag_t BLIS_UNIT_DIAG))
+
+(define BLIS-ZEROS (make-uplo_t BLIS_ZEROS))
+(define BLIS-LOWER (make-uplo_t BLIS_LOWER))
+(define BLIS-UPPER (make-uplo_t BLIS_UPPER))
+(define BLIS-DENSE (make-uplo_t BLIS_DENSE))
+
+(define BLIS-LEFT (make-side_t BLIS_LEFT))
+(define BLIS-RIGHT (make-side_t BLIS_RIGHT))
+
 (define (fliptr t)
   (cond
-   ((= t BLIS_NO_TRANSPOSE) BLIS_TRANSPOSE)
-   ((= t BLIS_TRANSPOSE) BLIS_NO_TRANSPOSE)
-   ((= t BLIS_CONJ_NO_TRANSPOSE) BLIS_CONJ_TRANSPOSE)
-   ((= t BLIS_CONJ_TRANSPOSE) BLIS_CONJ_NO_TRANSPOSE)
+   ((eq? t BLIS-NO-TRANSPOSE) BLIS-TRANSPOSE)
+   ((eq? t BLIS-TRANSPOSE) BLIS-NO-TRANSPOSE)
+   ((eq? t BLIS-CONJ-NO-TRANSPOSE) BLIS-CONJ-TRANSPOSE)
+   ((eq? t BLIS-CONJ-TRANSPOSE) BLIS-CONJ-NO-TRANSPOSE)
    (else (throw 'bad-transpose-1 t))))
 
 (define (tr? t)
   (cond
-   ((= t BLIS_NO_TRANSPOSE) #f)
-   ((= t BLIS_TRANSPOSE) #t)
-   ((= t BLIS_CONJ_NO_TRANSPOSE) #f)
-   ((= t BLIS_CONJ_TRANSPOSE) #t)
+   ((eq? t BLIS-NO-TRANSPOSE) #f)
+   ((eq? t BLIS-TRANSPOSE) #t)
+   ((eq? t BLIS-CONJ-NO-TRANSPOSE) #f)
+   ((eq? t BLIS-CONJ-TRANSPOSE) #t)
    (else (throw 'bad-transpose-2 t))))
 
-(export BLIS_NO_TRANSPOSE BLIS_TRANSPOSE BLIS_CONJ_NO_TRANSPOSE BLIS_CONJ_TRANSPOSE tr? fliptr
+(export tr? fliptr
+        BLIS-NO-TRANSPOSE BLIS-TRANSPOSE BLIS-CONJ-NO-TRANSPOSE BLIS-CONJ-TRANSPOSE
+        BLIS-NO-CONJUGATE BLIS-CONJUGATE
+        BLIS-NONUNIT-DIAG BLIS-UNIT-DIAG
+        BLIS-ZEROS BLIS-LOWER BLIS-UPPER BLIS-DENSE
+        BLIS-LEFT BLIS-RIGHT
+
+        BLIS_NO_TRANSPOSE BLIS_TRANSPOSE BLIS_CONJ_NO_TRANSPOSE BLIS_CONJ_TRANSPOSE
         BLIS_NO_CONJUGATE BLIS_CONJUGATE
         BLIS_NONUNIT_DIAG BLIS_UNIT_DIAG
         BLIS_ZEROS BLIS_LOWER BLIS_UPPER BLIS_DENSE
@@ -154,7 +182,7 @@ void bli_?setv
                            (symbol->string (syntax->datum #'name!))
                            "x := conjalpha(alpha)"))
                (check-array X 1 type)
-               (blis-name conjalpha (array-length X) (scalar->arg type alpha)
+               (blis-name (conj_t-val conjalpha) (array-length X) (scalar->arg type alpha)
                           (pointer-to-first X) (stride X 0))
                X)))))))
 
@@ -192,7 +220,8 @@ void bli_?setm
                            (symbol->string (syntax->datum #'name!))
                            "A := conjalpha(alpha)"))
                (check-array A 2 type)
-               (blis-name conjalpha diagoffa diaga uploa (dim A 0) (dim A 1) (scalar->arg type alpha)
+               (blis-name (conj_t-val conjalpha) diagoffa (diag_t-val diaga) (uplo_t-val uploa)
+                          (dim A 0) (dim A 1) (scalar->arg type alpha)
                           (pointer-to-first A) (stride A 0) (stride A 1))
                A)))))))
 
@@ -228,7 +257,7 @@ void bli_?copyv
                            (symbol->string (syntax->datum #'name!)) t t
                            "y := conjx(x)"))
                (check-2-arrays X Y 1 type)
-               (blis-name conjX (array-length X)
+               (blis-name (conj_t-val conjX) (array-length X)
                           (pointer-to-first X) (stride X 0)
                           (pointer-to-first Y) (stride Y 0))
                Y)))))))
@@ -271,7 +300,7 @@ void bli_?copym
                      (N (dim B 1)))
                  (unless (= M (dim A (if (tr? transa) 1 0))) (throw 'mismatched-B-rows))
                  (unless (= N (dim A (if (tr? transa) 0 1))) (throw 'mismatched-B-columns))
-                 (blis-name diagoffa diaga uploa transa M N
+                 (blis-name diagoffa (diag_t-val diaga) (uplo_t-val uploa) (trans_t-val transa) M N
                             (pointer-to-first A) (stride A 0) (stride A 1)
                             (pointer-to-first B) (stride B 0) (stride B 1))
                  B))))))))
@@ -305,7 +334,7 @@ void bli_?axpyv
                            (symbol->string (syntax->datum #'name!)) t t t
                            "y := y + alpha * conjx(x)"))
                (check-2-arrays X Y 1 type)
-               (blis-name conjX (array-length X)
+               (blis-name (conj_t-val conjX) (array-length X)
                           (scalar->arg type alpha)
                           (pointer-to-first X) (stride X 0)
                           (pointer-to-first Y) (stride Y 0))
@@ -353,7 +382,8 @@ void bli_?axpym
                      (N (dim B 1)))
                  (unless (= M (dim A (if (tr? transa) 1 0))) (throw 'mismatched-B-rows))
                  (unless (= N (dim A (if (tr? transa) 0 1))) (throw 'mismatched-B-columns))
-                 (blis-name diagoffa diaga uploa transa M N (scalar->arg type alpha)
+                 (blis-name diagoffa (diag_t-val diaga) (uplo_t-val uploa) (trans_t-val transa)
+                            M N (scalar->arg type alpha)
                             (pointer-to-first A) (stride A 0) (stride A 1)
                             (pointer-to-first B) (stride B 0) (stride B 1))
                  B))))))))
@@ -390,7 +420,7 @@ void bli_?axpbyv
                            (symbol->string (syntax->datum #'name!)) t t t t
                            "y := beta * y + alpha * conjx(x)"))
                (check-2-arrays X Y 1 type)
-               (blis-name conjX (array-length X)
+               (blis-name (conj_t-val conjX) (array-length X)
                           (scalar->arg type alpha)
                           (pointer-to-first X) (stride X 0)
                           (scalar->arg type beta)
@@ -429,7 +459,7 @@ void bli_?dotv
                            "rho := conjX(X)^T * conjY(Y)"))
                (check-2-arrays X Y 1 type)
                (let ((rho (make-typed-array type 0)))
-                 (blis-name conjX conjY (array-length X)
+                 (blis-name (conj_t-val conjX) (conj_t-val conjY) (array-length X)
                             (pointer-to-first X) (stride X 0)
                             (pointer-to-first Y) (stride Y 0)
                             (pointer-to-first rho))
@@ -482,7 +512,7 @@ See also: ~a"
                      (N (array-length X)))
                  (unless (= M (dim A (if (tr? transA) 1 0))) (throw 'mismatched-YA))
                  (unless (= N (dim A (if (tr? transA) 0 1))) (throw 'mismatched-XA))
-                 (blis-name transA conjX M N
+                 (blis-name (trans_t-val transA) (conj_t-val conjX) M N
                             (scalar->arg type alpha)
                             (pointer-to-first A) (stride A 0) (stride A 1)
                             (pointer-to-first X) (stride X 0)
@@ -545,7 +575,7 @@ See also: ~a"
                      (N (array-length Y)))
                  (unless (= M (dim A 0)) (throw 'mismatched-XA))
                  (unless (= N (dim A 1)) (throw 'mismatched-YA))
-                 (blis-name conjX conjY (array-length X) (array-length Y)
+                 (blis-name (conj_t-val conjX) (conj_t-val conjY) (array-length X) (array-length Y)
                             (scalar->arg type alpha)
                             (pointer-to-first X) (stride X 0)
                             (pointer-to-first Y) (stride Y 0)
@@ -617,7 +647,7 @@ See also: ~a
                  (unless (= M (dim A (if (tr? transA) 1 0))) (throw 'mismatched-CA))
                  (unless (= N (dim B (if (tr? transB) 0 1))) (throw 'mismatched-CB))
                  (unless (= K (dim B (if (tr? transB) 1 0))) (throw 'mismatched-AB))
-                 (blis-name transA transB M N K
+                 (blis-name (trans_t-val transA) (trans_t-val transB) M N K
                             (scalar->arg type alpha)
                             (pointer-to-first A) (stride A 0) (stride A 1)
                             (pointer-to-first B) (stride B 0) (stride B 1)

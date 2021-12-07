@@ -22,8 +22,9 @@ Help: [C-uc .] insert timestamp [C-cc] flip checkbox [C-uucc] partial flip check
     * [ ] for raw bindings (see bug below)
   * [ ] module level doc
 
-* TODO extras [0/2]
-  * [-] typed trans_t conj_t side_t uplo_t diag_t
+* TODO safety [1/2]
+  * [X] typed trans_t conj_t side_t uplo_t diag_t
+  * [ ] check diagoff_t and other like parameters
 
 * TODO bugs [0/1]
   * [ ] (help (ffi blis)) doesn't work
