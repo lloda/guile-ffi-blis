@@ -521,7 +521,7 @@ See also: ~a"
                  Y))
              (define (name transA conjX alpha A X)
                #,(format #f "\
-(~a transA conjX alpha A X beta Y)
+(~a transA conjX alpha A X)
 
 Return
 
