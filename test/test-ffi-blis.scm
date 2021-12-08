@@ -137,6 +137,24 @@
 
 
 ; ---------------------------------
+; ?swapv
+; ---------------------------------
+
+(let* ((x (array-copy #f64(1 2 3)))
+       (z (array-copy #f64(7 8 9 10 11 12)))
+       (y (make-shared-array z (lambda (i) (list (+ 1 (* i 2)))) 3)))
+  (blis-swapv! x y)
+  (test-assert (array-equal? x #f64(8 10 12)))
+  (test-assert (array-equal? z #f64(7 1 9 2 11 3))))
+
+
+(let* ((A (array-copy #2c64((1 2 3) (4 5 6))))
+       (B (blis-setm! BLIS-CONJUGATE 0 BLIS-NONUNIT-DIAG BLIS-DENSE 3+9i A)))
+  (test-eq A B)
+  (test-equal A (make-typed-array 'c64 3-9i 2 3)))
+
+
+; ---------------------------------
 ; ?axpbym ?copym FIXME coverage of flags
 ; ---------------------------------
 

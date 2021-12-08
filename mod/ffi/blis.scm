@@ -309,6 +309,36 @@ void bli_?copym
 (define-auto (blis-copym! diagoffa diaga uploa transa A B) A blis-?copym!)
 
 #|
+void bli_?swapv
+     (
+       dim_t   n,
+       ctype*  x, inc_t incx,
+       ctype*  y, inc_t incy
+     );
+|#
+
+(define-syntax define-swapv
+  (lambda (x)
+    (syntax-case x ()
+      ((_ type_ blis-name name!)
+       (with-syntax ((type #'(quote type_)))
+         #`(begin
+             (define blis-name (pointer->procedure
+                                void (dynamic-func #,(symbol->string (syntax->datum #'blis-name)) libblis)
+                                (list dim_t rank1_t inc_t rank1_t inc_t)))
+             (define (name! X Y)
+               #,(let ((t (syntax->datum #'type_)))
+                   (format #f "(~a X Y) => y\n\nSwap the contents of ~a rank-1 arrays X and Y."
+                           (symbol->string (syntax->datum #'name!)) t))
+               (check-2-arrays X Y 1 type)
+               (blis-name (array-length X)
+                          (pointer-to-first X) (stride X 0)
+                          (pointer-to-first Y) (stride Y 0)))))))))
+
+(define-sdcz swapv bli_?swapv blis-?swapv!)
+(define-auto (blis-swapv! X Y) X blis-?swapv!)
+
+#|
 void bli_?axpyv
      (
        conj_t  conjx,
