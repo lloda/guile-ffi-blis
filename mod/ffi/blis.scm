@@ -498,6 +498,42 @@ void bli_?dotv
 (define-sdcz dotv bli_?dotv blis-?dotv)
 (define-auto (blis-dotv conjX conjY X Y) X blis-?dotv)
 
+#|
+void bli_?norm[1fi]v
+     (
+       dim_t   n,
+       ctype*  x, inc_t incx,
+       rtype*  norm
+     );
+|#
+
+(define-syntax define-normv
+  (lambda (x)
+    (syntax-case x ()
+      ((_ tag_ tag-result_ blis-name name)
+       (with-syntax ((tag #'(quote tag_))
+                     (tag-result #'(quote tag-result_)))
+         #`(begin
+             (define blis-name (pointer->procedure
+                                void (dynamic-func #,(symbol->string (syntax->datum #'blis-name)) libblis)
+                                (list dim_t rank1_t inc_t rank0_t)))
+             (define (name X)
+               #,(let ((t (syntax->datum #'tag_)))
+                   (format #f "(~a x) => norm\n\nCompute the norm of ~a 1-array x."
+                           (symbol->string (syntax->datum #'name)) t))
+               (check-array X 1 tag)
+               (let ((norm (make-typed-array tag-result 0)))
+                 (blis-name (array-length X) (pointer-to-first X) (stride X 0)
+                            (pointer-to-first norm))
+                 (array-ref norm)))))))))
+
+(define-sdcz-result normv bli_?normfv blis-?normfv)
+(define-sdcz-result normv bli_?norm1v blis-?norm1v)
+(define-sdcz-result normv bli_?normiv blis-?normiv)
+(define-auto (blis-normfv X) X blis-?normfv)
+(define-auto (blis-norm1v X) X blis-?norm1v)
+(define-auto (blis-normiv X) X blis-?normiv)
+
 
 ; -----------------------------
 ; level-2: *gemv *ger hemv her her2 symv syr syr2 trmv trsv

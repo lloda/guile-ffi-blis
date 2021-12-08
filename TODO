@@ -3,15 +3,18 @@
 Help: [C-uc .] insert timestamp [C-cc] flip checkbox [C-uucc] partial flip checkbox [C-ct] flip TODO.
 
 * TODO coverage [0/0]
-  * wrap BLIS level 1v [3/5]
+  * wrap BLIS level 1v [2/4]
     * [X] setv copyv axpyv axpbyv swapv
     * [ ] functional variants for setv copyv axpyv axpbyv
-    * [X] dotv
+    * [X] dotv norm1v normfv normiv
     * [ ] addv amaxv dotxv invertv scal2v scalv subv xpbyvdotv
   * wrap BLIS level 1m [1/3]
     * [X] setm axpym copym
     * [ ] proper tests for axpym copym
     * [ ] addm scalm scal2m subm
+  * wrap BLIS level 3m [1/2]
+    * [X] blis-?gemm! blis-?gemm blis-gemm!
+    * [ ] blis-gemm
   * wrap BLIS utility, at least some of these [0/1]
     * [ ] asumv norm1v normfv normiv norm1m normfm normim mkherm mksymm mktrim randv randm sumsqv
 

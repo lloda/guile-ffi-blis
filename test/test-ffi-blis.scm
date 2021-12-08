@@ -206,6 +206,18 @@
 
 
 ; ---------------------------------
+; ?norm1v normfv normiv
+; ---------------------------------
+
+(test-approximate (blis-dnorm1v #f64(1 2 3 4)) 10. 0)
+(test-approximate (blis-dnormfv #f64(1 2 3 4)) (sqrt (+ (* 1 1) (* 2 2) (* 3 3) (* 4 4))) 0)
+(test-approximate (blis-dnormiv #f64(1 2 3 4)) 4. 0)
+(test-approximate (blis-norm1v #c32(0+1i 2 3 0-4i)) 10. 0)
+(test-approximate (blis-normfv #c64(0+1i 2 3 0-4i)) (sqrt (+ (* 1 1) (* 2 2) (* 3 3) (* 4 4))) 0)
+(test-approximate (blis-normiv #c32(0+1i 2 3 0-4i)) 4. 0)
+
+
+; ---------------------------------
 ; sgemm dgemm cgemm zgemm
 ; ---------------------------------
 

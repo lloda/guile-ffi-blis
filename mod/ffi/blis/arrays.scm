@@ -13,7 +13,7 @@
   #:export (syntax->list
             check-array check-2-arrays
             stride dim
-            define-sdcz
+            define-sdcz define-sdcz-result
             define-auto))
 
 (import (system foreign) (srfi srfi-1) (srfi srfi-11) (srfi srfi-26) (ice-9 match))
@@ -66,6 +66,22 @@
                     (list (cons* #'definer (datum->syntax x tag) fun)
                           (cons* #'export fun))))
                 '(f32 f64 c32 c64)
+                '(s d c z))))))))
+
+(define-syntax define-sdcz-result
+  (lambda (x)
+    (syntax-case x ()
+      ((_ root n ...)
+       (with-syntax ((definer (datum->syntax x (string->symbol (format #f "define-~a" (syntax->datum #'root))))))
+         (cons #'begin
+               (append-map
+                (lambda (tag tag-result t)
+                  (let ((fun (map (cut subst-qmark <> t) (syntax->list #'(n ...)))))
+; #`(quote #,(datum->syntax x tag)) to write out a symbol, but assembling docstrings seems harder (?)
+                    (list (cons* #'definer (datum->syntax x tag) (datum->syntax x tag-result) fun)
+                          (cons* #'export fun))))
+                '(f32 f64 c32 c64)
+                '(f32 f64 f32 f64)
                 '(s d c z))))))))
 
 (define-syntax define-auto
