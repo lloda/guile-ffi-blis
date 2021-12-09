@@ -81,7 +81,7 @@ $GUILE ... etc.
 #### BLIS level 1
 
 * `setv` `copyv` `axpyv` `axpbyv` `swapv`
-* `dotv` `norm1v` `normfv` `normiv`
+* `dotv` `norm1v` `normfv` `normiv` `amaxv`
 * `setm` `copym` `axpym`
 
 #### BLIS level 2

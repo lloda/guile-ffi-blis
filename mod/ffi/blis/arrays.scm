@@ -60,10 +60,10 @@
        (with-syntax ((definer (datum->syntax x (string->symbol (format #f "define-~a" (syntax->datum #'root))))))
          (cons #'begin
                (append-map
-                (lambda (tag t)
+                (lambda (ctype t)
                   (let ((fun (map (cut subst-qmark <> t) (syntax->list #'(n ...)))))
-; #`(quote #,(datum->syntax x tag)) to write out a symbol, but assembling docstrings seems harder (?)
-                    (list (cons* #'definer (datum->syntax x tag) fun)
+; #`(quote #,(datum->syntax x ctype)) to write out a symbol, but assembling docstrings seems harder (?)
+                    (list (cons* #'definer (datum->syntax x ctype) fun)
                           (cons* #'export fun))))
                 '(f32 f64 c32 c64)
                 '(s d c z))))))))
@@ -75,10 +75,10 @@
        (with-syntax ((definer (datum->syntax x (string->symbol (format #f "define-~a" (syntax->datum #'root))))))
          (cons #'begin
                (append-map
-                (lambda (tag tag-result t)
+                (lambda (ctype rtype t)
                   (let ((fun (map (cut subst-qmark <> t) (syntax->list #'(n ...)))))
-; #`(quote #,(datum->syntax x tag)) to write out a symbol, but assembling docstrings seems harder (?)
-                    (list (cons* #'definer (datum->syntax x tag) (datum->syntax x tag-result) fun)
+; #`(quote #,(datum->syntax x ctype)) to write out a symbol, but assembling docstrings seems harder (?)
+                    (list (cons* #'definer (datum->syntax x ctype) (datum->syntax x rtype) fun)
                           (cons* #'export fun))))
                 '(f32 f64 c32 c64)
                 '(f32 f64 f32 f64)

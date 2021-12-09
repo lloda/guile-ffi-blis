@@ -4,7 +4,7 @@ Help: [C-uc .] insert timestamp [C-cc] flip checkbox [C-uucc] partial flip check
 
 * TODO coverage [0/0]
   * wrap BLIS level 1v [2/4]
-    * [X] setv copyv axpyv axpbyv swapv
+    * [X] setv copyv axpyv axpbyv swapv amaxv
     * [ ] functional variants for setv copyv axpyv axpbyv
     * [X] dotv norm1v normfv normiv
     * [ ] addv amaxv dotxv invertv scal2v scalv subv xpbyvdotv
