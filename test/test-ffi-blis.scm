@@ -292,9 +292,15 @@
                                     make-M-strided make-M-strided-both make-M-strided-reversed))
 
       (blis-error-checking-level-set! BLIS_NO_ERROR_CHECKING)
+      (test-begin "overlap")
       (with-matrix-types with-overlap without-overlap)
+      (test-end "overlap")
+
       (blis-error-checking-level-set! BLIS_FULL_ERROR_CHECKING)
-      (with-matrix-types without-overlap without-overlap)))
+      (test-begin "no overlap")
+      (with-matrix-types without-overlap without-overlap)
+      (test-end "no overlap")
+      ))
  `((f32 ,blis-sgemm!)
    (f64 ,blis-dgemm!)
    (c32 ,blis-cgemm!)

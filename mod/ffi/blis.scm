@@ -57,7 +57,7 @@
     (bytevector->pointer root (* (shared-array-offset A) (srfi-4-vector-type-size root)))))
 
 (define (scalar->arg stype a)
-  (bytevector->pointer (make-typed-array stype a 1) 0))
+  (bytevector->pointer (make-typed-array stype a 1)))
 
 
 ; -----------------------------
@@ -153,7 +153,8 @@
 
 
 ; -----------------------------
-; level-1v: addv amaxv *axpyv *axpbyv *copyv *dotv dotxv invertv scal2v scalv setv subv swapv xpbyv
+; level-1v: amaxv *axpyv *axpbyv *copyv *dotv setv swapv
+; level-1m: setm *axpym *copym
 ; -----------------------------
 
 ; The bizarre definition of this function (index of max by |re|+|im|) which comes from BLAS i?amax.
@@ -170,7 +171,7 @@
              (define (name X)
                #,(let ((t (syntax->datum #'ctype_)))
                    (format #f "
-Return the (0-based) index of the element with the smallest |re|+|im| in ~a 1-array @var{x}." t))
+Return the (0-based) index of the element with the largest |x| (for real types) or |re|+|im| (for complex types) in ~a 1-array @var{x}." t))
                (check-array X 1 ctype)
                (let ((index (make-typed-array ctype_dim_t -1)))
                  (blis-name (array-length X) (pointer-to-first X) (stride X 0)
