@@ -10,7 +10,6 @@
 (import (ffi blis) (srfi srfi-64) (srfi srfi-1) (ice-9 match) (srfi srfi-26) (ice-9 arrays))
 (include "common.scm")
 
-(set! test-log-to-file #f)
 (test-begin "ffi-blis")
 
 (define (apply-transpose-flag A flag)
@@ -36,11 +35,15 @@
       ((_ ((a b) ...) e0 e ...)
        #'(for-each (lambda (a ...) e0 e ...) b ...)))))
 
-(define* (test-approximate-array tag test expected err)
-  (test-begin tag)
-  (array-for-each (lambda (test expected) (test-approximate test expected err))
-                  test expected)
-  (test-end tag))
+(define* (test-approximate-array tag expected val err)
+  (let ((tag (if (symbol? tag) (symbol->string tag) tag)))
+    (test-begin tag)
+    (array-for-each (lambda (expected val)
+                      (if (and (real? expected) (real? val))
+                        (test-approximate expected val err)
+                        (test-approximate 0. (magnitude (- expected val)) err)))
+                    expected val)
+    (test-end tag)))
 
 (define (scalar-cases stype)
   (match stype
@@ -115,8 +118,8 @@
       (for-each-lambda ((beta beta))
         (let ((val-ref (ref conj-A alpha A beta Bref))
               (val-f (f conj-A alpha A beta B)))
-          (test-approximate-array 'source A Aref 0)
-          (test-approximate-array 'content B Bref 0)
+          (test-approximate-array 'source Aref A 0)
+          (test-approximate-array 'content Bref B 0)
           (test-approximate-array 'result val-ref val-f 0))))
     (test-end case-name)))
 
